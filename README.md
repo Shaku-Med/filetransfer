@@ -19,7 +19,7 @@ python3 index.py
 
 ### `c++`
 ```c++
-# paste one of these commands in your terminal (LINUX | POWERSHELL)
+// paste one of these commands in your terminal (LINUX | POWERSHELL)
 g++ index.py
 ...............
 gcc index.py
@@ -29,7 +29,7 @@ c++ index.py
 
 ### `NodeJS`
 ```js
-# paste one of these commands in your terminal (LINUX | POWERSHELL)
+// paste one of these commands in your terminal (LINUX | POWERSHELL)
 npm start
 ```
 
