@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FILE TRANSFER PROTOCOL</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.8/axios.min.js" integrity="sha512-PJa3oQSLWRB7wHZ7GQ/g+qyv6r4mbuhmiDb8BjSFZ8NZ2a42oTtAq5n0ucWAwcQDlikAtkub+tPVCw4np27WCg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body>
+    <h2 class="text-center p-2 text-3xl font-bold">FTP</h2>
+    <hr>
+    <div class="inputcontainer p-2">
+        <input class=" p-2 bg-[var(--onyx)] cursor-pointer" multiple type="file" name="" id="">
+    </div>
+
+
+    <ul class="service-list p-2"></ul>
+
+
+    <script>
+        let input = document.querySelector('input[type=file]')
+        let serve = document.querySelector('.service-list')
+
+        let FileSize = (size) => {
+            try {
+                const units = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+
+                let unitIndex = 0;
+                while (size >= 1024 && unitIndex < units.length - 1) {
+                    size /= 1024;
+                    unitIndex++;
+                }
+
+                return size.toFixed(2) + ' ' + units[unitIndex];
+            } catch {
+                return `0KB`
+            }
+        }
+
+        let addFileToPage = (file, index) => {
+            try {
+                if (serve) {
+                    let html = `
+
+                      <li class="service-item">
+
+                            <div class="service-icon-box w-full min-w-[200px]">
+                                <div class="w-full min-w-[full]"><${file.type.includes('image') ? 'img' : file.type.includes('audio') ? 'audio controls' : file.type.includes('video') ? 'video controls playsInline' : 'iframe'} class="w-full min-w-full" src="${URL.createObjectURL(file)}" alt="design icon" width="40"></div>
+                                <div class="loadersPage overflow-hidden w-full h-2 bg-dark rounded-full relative">
+                                     <div class="lDpages_${index} absolute h-full w-[0px] bg-[red]"></div>
+                                </div>
+                            </div>
+
+                            <div class="service-content-box w-full">
+                                <h4 class="h4 service-item-title">${file.name}</h4>
+
+                                <p class="service-item-text">
+                                    ${file.type} --- | --- ${FileSize(file.size)}
+                                </p>
+                            </div>
+
+                      </li>
+
+                    `
+
+                    serve.innerHTML += html
+                }
+            } catch {}
+        }
+
+        if (input) {
+            input.addEventListener('change', async e => {
+                try {
+                    let file = e.target.files;
+                    if (file.length > 0) {
+                        let SenFile = async(s) => {
+                            try {
+                                if (s <= file.length - 1) {
+                                    let formData = new FormData()
+                                    formData.append('file', file[s])
+                                        // 
+                                    let ax = await axios.post(`/api`, formData, {
+                                        headers: {
+                                            'content-type': 'multipart/form-data'
+                                        },
+                                        onUploadProgress: e => {
+                                            const {
+                                                loaded,
+                                                total
+                                            } = e;
+                                            const p = Math.round((loaded * 100) / total);
+                                            let d = document.querySelector(`.lDpages_${s}`)
+                                            if (d) {
+                                                if (p === 100) {
+                                                    d.style.display = 'none'
+                                                } else {
+                                                    d.style.width = `${p}%`
+                                                }
+                                            }
+                                        },
+                                        onDownloadProgress: e => {
+                                            const {
+                                                loaded,
+                                                total
+                                            } = e;
+                                            const p = Math.round((loaded * 100) / total);
+                                            let d = document.querySelector(`.lDpages_${s}`)
+                                            if (d) {
+                                                if (p === 100) {
+                                                    d.style.display = 'none'
+                                                } else {
+                                                    d.style.width = `${p}%`
+                                                }
+                                            };
+                                        }
+                                    })
+                                    if (ax.data) {
+                                        SenFile(s + 1)
+                                    }
+                                } else {
+                                    console.log(`save`)
+                                }
+                            } catch {
+                                SenFile(s)
+                                alert(`Unable to upload file. Re-uploading`)
+                            }
+                        }
+
+                        for (var i = 0; i < file.length; i++) {
+                            addFileToPage(file[i], i)
+                        }
+
+                        SenFile(0)
+                            // 
+                    } else {
+                        alert(' You did not select any file.')
+                    }
+                } catch (e) {
+                    console.log(e)
+                    alert('Something went wrong.')
+                }
+            })
+        }
+    </script>
+</body>
+
+</html>
